@@ -4,14 +4,17 @@
 #include <initializer_list>
 #include <iostream>
 #include <cmath>
+#include <iterator>
 
 /*
 * 这是一个base class即BaseMatrix
 * BaseMatrix主要用于检查形式并构造矩阵
-* 它的derived class是matrix
+* BaseMatrix同时定义并实现Matrix类的迭代器
+* 迭代器的category为random_access_iterator_tag
+* 它的derived class是Matrix
 */
 template<typename Data>
-class BaseMatrix { //不希望用户创建该类，故除operator=外，该类无public方法
+class BaseMatrix {
 public:
     BaseMatrix &operator=(const BaseMatrix &);
 
@@ -73,9 +76,9 @@ template<typename Data>
 Data norm(Matrix<Data> &&);
 
 template<typename Data>
-class Matrix : private BaseMatrix<Data> {
-    friend std::ostream &operator
-    <<<Data>(std::ostream &, Matrix<Data> &);
+class Matrix : public BaseMatrix<Data> {
+    friend std::ostream &operator<<
+    <Data>(std::ostream &, Matrix<Data> &);
 
     friend Data det<Data>(Matrix<Data> &);
 
@@ -149,13 +152,12 @@ private:
 };
 
 
-
-
-
-
-
-
-
+/*
+ * 重载vector的输出方式
+ * 便于输出Matrix的行向量
+ */
+template<typename Data>
+std::ostream &operator<<(std::ostream &, std::vector<Data> &);
 
 
 
@@ -192,6 +194,15 @@ void operator_parentheses_set_index(size_t &begin_index, size_t &end_index, int 
             throw std::runtime_error("more parameters than requirements");
     }
 }
+
+template<typename Data>
+std::ostream &operator<<(std::ostream &os, std::vector<Data> &vd) {
+    for (auto iter = vd.cbegin(); iter != vd.cend(); ++iter) {
+        os << *iter << "\t";
+    };
+    return os;
+}
+
 
 /*
 * 本实现文件中，由于BaseMatrix<Data>::init函数传入的参数需调用swap()函数，
